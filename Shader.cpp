@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "stdafx.h"
 
 
 Shader::Shader(const char* vertexShaderFile, const char* fragmentShaderFile)
@@ -18,7 +18,7 @@ void Shader::LinkShader()
 	if (check == GL_FALSE)
 	{
 		glGetProgramInfoLog(m_iProgramID, 512, NULL, infoLog);
-		E_ERROR( "Program Shader link error -> " + string(infoLog));
+		cout<< "Program Shader link error -> " + string(infoLog);
 	}
 
 	GLint nUniform, maxLen;
@@ -65,7 +65,7 @@ bool Shader::Load(const char * vertexShaderFile, const char * fragmentShaderFile
 	FILE* pvFile = fopen(vertexShaderFile, "rt");
 	if (!pvFile)
 	{
-		E_ERROR( "Can't open File: " + string(vertexShaderFile));
+		cout<< "Can't open File: " + string(vertexShaderFile);
 		return false;
 	}
 	if (fseek(pvFile, 0L, SEEK_END) == 0)
@@ -80,7 +80,7 @@ bool Shader::Load(const char * vertexShaderFile, const char * fragmentShaderFile
 	FILE* pfFile = fopen(fragmentShaderFile, "rt");
 	if (!pfFile)
 	{
-		E_ERROR( "Can't open File: " + string(fragmentShaderFile));
+		cout << "Can't open File: " + string(fragmentShaderFile);
 		return false;
 	}
 	if (fseek(pfFile, 0L, SEEK_END) == 0)
@@ -102,8 +102,8 @@ bool Shader::Load(const char * vertexShaderFile, const char * fragmentShaderFile
 	if (check == GL_FALSE)
 	{
 		glGetShaderInfoLog(m_iVertexShader, 512, NULL, infoLog);
-		E_ERROR("FILE: " + string(vertexShaderFile));
-		E_ERROR( "Vertex shader compile error -> " + string(infoLog));
+		cout << "FILE: " + string(vertexShaderFile);
+		cout << "Vertex shader compile error -> " + string(infoLog);
 
 	}
 
@@ -117,14 +117,16 @@ bool Shader::Load(const char * vertexShaderFile, const char * fragmentShaderFile
 	if (check == GL_FALSE)
 	{
 		glGetShaderInfoLog(m_iFragmentShader, 512, NULL, infoLog);
-		E_ERROR("FILE: " + string(fragmentShaderFile));
-		E_ERROR( "Fragment shader compile error -> " + string(infoLog));
+		cout << "FILE: " + string(fragmentShaderFile);
+		cout << "Fragment shader compile error -> " + string(infoLog);
 
 	}
 
 	m_iProgramID = glCreateProgram();
 	glAttachShader(m_iProgramID, m_iVertexShader);
 	glAttachShader(m_iProgramID, m_iFragmentShader);
+
+	LinkShader();
 
 	return true;
 }

@@ -1,11 +1,13 @@
-#include "pch.h"
+#include "stdafx.h"
 
 
 
-vec2 Windows::ReadConfig(tinyxml2::XMLElement * pWindows)
+vec2 Windows::ReadConfig()
 {
-	if (!pWindows) return vec2(0,0);
+	tinyxml2::XMLDocument doc;
+	doc.LoadFile("config.xml");
 
+	tinyxml2::XMLElement* pWindows = doc.FirstChildElement("Window");
 	m_WindowTitle = pWindows->Attribute("name");
 	
 	m_iWidth = pWindows->DoubleAttribute("sizex", 800);
@@ -23,28 +25,8 @@ vec2 Windows::ReadConfig(tinyxml2::XMLElement * pWindows)
 Windows::Windows()
 {
 	
-	
-	/*int	 count;
-	const GLFWvidmode* mode = glfwGetVideoModes(m_pMonitor, &count);
-	for (int i = 0; i < count; i++)
-	{
-		cout << mode[i].width << ' ' << mode[i].height << endl;
-	}*/
+	vec2 pos = ReadConfig();
 
-}
-
-
-Windows::~Windows()
-{
-	glfwDestroyWindow(m_pWindow);
-	glfwTerminate();
-}
-
-void Windows::Init(Context* c)
-{
-
-	vec2 pos = ReadConfig(c->GetElement("Window"));
-	
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -58,29 +40,31 @@ void Windows::Init(Context* c)
 	m_pWindow = glfwCreateWindow(m_iWidth, m_iHeight, m_WindowTitle.c_str(), nullptr, nullptr);
 	if (!m_pWindow)
 	{
-		E_ERROR("Can't create Window.");
-		return ;
+		cout<<"Can't create Window.";
+		return;
 	}
-	
-	glfwSetWindowUserPointer(m_pWindow, c);
+
+	//glfwSetWindowUserPointer(m_pWindow, this);
 	glfwMakeContextCurrent(m_pWindow);
 	//glfwSwapInterval(1);
-	glfwSetCursorPos(m_pWindow, m_iWidth / 2, m_iHeight / 2);
-	glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	
-	
+	//glfwSetCursorPos(m_pWindow, m_iWidth / 2, m_iHeight / 2);
+	//glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
 	SetPos(pos);
 
 	HideWindows();
-	c->m_pWindows = std::unique_ptr<Windows>(this);
-	
-	return ;
+	return;
+
 }
 
-void Windows::ShutDown()
+
+Windows::~Windows()
 {
-
+	glfwDestroyWindow(m_pWindow);
+	glfwTerminate();
 }
+
 
 void Windows::SetSize(int W, int H)
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "pch.h"
+#include "stdafx.h"
 
 // base shader class
 class Shader
@@ -18,7 +18,6 @@ public:
 
 	virtual ~Shader();
 	virtual void LinkShader();
-	virtual void SetupRender(Scene*, Actor*) {};
 
 	bool Load(const char* vertexShaderFile, const char* fragmentShaderFile);
 	inline void Use() { glUseProgram(m_iProgramID); };

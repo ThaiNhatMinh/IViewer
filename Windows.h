@@ -1,12 +1,8 @@
 #pragma once
-#include "pch.h"
-extern void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-extern void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-extern void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-extern void scroll_callback(GLFWwindow*, double, double);
+#include "stdafx.h"
 
 
-class Windows: public ISubSystem
+class Windows
 {
 private:
 	GLuint m_iWidth;
@@ -22,12 +18,10 @@ private:
 private:
 	// Read config from XMLElement
 	// return init pos window
-	vec2 ReadConfig(tinyxml2::XMLElement* pData);
+	vec2 ReadConfig();
 public:
 	Windows();
 	~Windows();
-	virtual void Init(Context* c);
-	virtual void ShutDown();
 	void SetSize(int W, int H);
 	void SetPos(vec2 pos);
 	void ShowWindows();
