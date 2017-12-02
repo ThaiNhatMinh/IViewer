@@ -171,16 +171,16 @@ SystemUI::SystemUI(Windows* w32):m_Time(0)
 
 
 	
-	m_Font = io.Fonts->AddFontFromFileTTF("Data\\Fonts\\Roboto-Medium.ttf", 16.0f);
+	m_Font = io.Fonts->AddFontFromFileTTF("Data\\Fonts\\gamefont_mh.ttf", 16.0f);
 
 	ImFontConfig config;
 	//config.MergeMode = true;
 
 	//const ImWchar icons_ranges_fontawesome[] = { 0xf000, 0xf3ff, 0 };
-	io.Fonts->AddFontFromFileTTF("Data\\Fonts\\fontawesome-webfont.ttf", 18.0f);
+	//io.Fonts->AddFontFromFileTTF("Data\\Fonts\\fontawesome-webfont.ttf", 18.0f);
 
-	const ImWchar icons_ranges_googleicon[] = { 0xe000, 0xeb4c, 0 };
-	io.Fonts->AddFontFromFileTTF("Data\\Fonts\\MaterialIcons-Regular.ttf", 18.0f, &config, icons_ranges_googleicon);
+	//const ImWchar icons_ranges_googleicon[] = { 0xe000, 0xeb4c, 0 };
+	//io.Fonts->AddFontFromFileTTF("Data\\Fonts\\MaterialIcons-Regular.ttf", 18.0f, &config, icons_ranges_googleicon);
 
 	CreateFontsTexture();
 
@@ -209,7 +209,6 @@ void SystemUI::OnRenderDrawLists(ImDrawData * draw_data)
 	//glDisable(GL_CULL_FACE);
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Setup viewport, orthographic projection matrix
 	glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
@@ -251,6 +250,5 @@ void SystemUI::OnRenderDrawLists(ImDrawData * draw_data)
 	//glEnable(GL_CULL_FACE);
 	//glEnable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 

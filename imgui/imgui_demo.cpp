@@ -23,6 +23,7 @@
 #endif
 
 #include "imgui.h"
+#include "stdafx.h"
 #include <ctype.h>          // toupper, isprint
 #include <math.h>           // sqrtf, powf, cosf, sinf, floorf, ceilf
 #include <stdio.h>          // vsnprintf, sscanf, printf

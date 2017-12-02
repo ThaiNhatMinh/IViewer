@@ -42,10 +42,10 @@ Mesh::Mesh()
 {
 	m_Vertexs.resize(4);
 	
-	m_Vertexs[0].pos = vec2(-0.5f, 0.5f);
-	m_Vertexs[1].pos = vec2(-0.5f, -0.5f);
-	m_Vertexs[2].pos = vec2(0.5f, 0.5f);
-	m_Vertexs[3].pos = vec2(0.5f, -0.5f);
+	m_Vertexs[0].pos = vec2(-1.0f, 1.0f);
+	m_Vertexs[1].pos = vec2(-1.0f, -1.0f);
+	m_Vertexs[2].pos = vec2(1.0f, 1.0f);
+	m_Vertexs[3].pos = vec2(1.0f, -1.0f);
 
 	
 	m_Vertexs[0].uv = vec2(0.0f, 1.0f);
@@ -79,14 +79,14 @@ void Mesh::Finalize(Shader* p)
 
 	size_t offset = 0;
 
-	GLuint location = p->GetAttribLocation("position");
+	GLuint location = p->GetAttribLocation("Position");
 	glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, stride, (GLvoid*)offset);
 	offset += 2 * sizeof(float);
 
 
 
-	location = p->GetAttribLocation("uv");
+	location = p->GetAttribLocation("UV");
 	glEnableVertexAttribArray(location);
 	glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE, stride, (GLvoid*)offset);
 	offset += 2 * sizeof(float);
@@ -100,8 +100,17 @@ void Mesh::Finalize(Shader* p)
 
 void Mesh::Resize(float w, float h)
 {
-	m_Vertexs[0].pos = vec2(0.5f*w, 0.5f*h);
-	m_Vertexs[1].pos = vec2(-0.5f*w, 0.5f*h);
-	m_Vertexs[2].pos = vec2(-0.5f*w, -0.5f*h);
-	m_Vertexs[3].pos = vec2(0.5f*w, -0.5f*h);
+	m_Vertexs[0].pos = vec2(0,0);
+	m_Vertexs[1].pos = vec2(0, h);
+	m_Vertexs[2].pos = vec2(w, 0);
+	m_Vertexs[3].pos = vec2(w, h);
+
+	//m_Vertexs[0].pos = vec2(-0.5f*w, 0.5f*h);
+	//m_Vertexs[1].pos = vec2(-0.5f*w, -0.5f*h);
+	//m_Vertexs[2].pos = vec2(0.5f*w, 0.5f*h);
+	//m_Vertexs[3].pos = vec2(0.5f*w, -0.5f*h);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER,4*sizeof(DefaultVertex), &m_Vertexs[0],GL_STREAM_DRAW);
 }

@@ -170,6 +170,7 @@
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="imguiMesh.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
     <ClCompile Include="IViewer.cpp" />
     <ClCompile Include="OpenGLRenderer.cpp" />

@@ -2,17 +2,26 @@
 class Image
 {
 public:
-	Image();
+	Image(vec2 windowsize);
 	void LoadTexture(const char* file);
+	bool SaveFile(const char* file);
 	~Image();
 
 	vector<FrameBuffer> m_List;
-	Texture m_Tex;
+
+	GLuint iIndex; // Texture index
+	GLuint iWidth; // 
+	GLuint iHeight;
+	GLuint iType, iBpp;
+	bool hasload = 0;
 	bool HasTexture();
-	void Render();
+	GLuint Render();
 private:
 	std::unique_ptr<Shader> m_Shader;
 	Mesh m_Quad;
+	string m_Path;
+	vec2 m_WinSize;
+	
 
 };
 

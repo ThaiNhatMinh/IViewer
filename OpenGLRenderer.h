@@ -32,7 +32,9 @@ public:
 	virtual void SetDrawMode(GLenum mode);
 	virtual void SetVertexArrayBuffer(GLuint vao);
 	virtual vec4 GetViewport();
-
+	virtual vec4& GetClearColor() {
+		return m_ClearColor;
+	};
 	virtual void SwapBuffer();
 
 private:

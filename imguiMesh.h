@@ -42,4 +42,5 @@ public:
 	// dirive class can redifine this function to add more data;
 	void Finalize(Shader* p);
 	void Resize(float w, float h);
+	
 };

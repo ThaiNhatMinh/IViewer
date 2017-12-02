@@ -2,11 +2,11 @@
 
 uniform sampler2D Texture;
 
-in vec2 vUV;
+in vec2 Frag_UV;
 
 out vec4 Out_Color;
 
 void main()
 {
-	Out_Color = texture( Texture, vUV.st);
+	Out_Color = texture( Texture, Frag_UV.st);
 }

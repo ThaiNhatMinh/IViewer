@@ -31,6 +31,7 @@ public:
 	inline void SetUniform(const char* name, float x, float y) { glUniform2f(m_UniformLists[name], x, y); }
 	inline void SetUniform(const char* name, float x, float y, float z) { glUniform3f(m_UniformLists[name], x, y, z); }
 	inline void SetUniform(const char* name, vec3 val) { glUniform3f(m_UniformLists[name], val.x, val.y, val.z); }
+	inline void SetUniform(const char* name, vec2 val) { glUniform2f(m_UniformLists[name], val.x, val.y); }
 	inline void SetUniform(const char* name, int val) { glUniform1i(m_UniformLists[name], val); }
 	inline void SetUniformMatrix(GLuint location, const float* data) { glUniformMatrix4fv(location, 1, GL_FALSE, data); }
 	inline void SetUniformMatrix(const char* name, const float* data) { glUniformMatrix4fv(m_UniformLists[name], 1, GL_FALSE, data); }
