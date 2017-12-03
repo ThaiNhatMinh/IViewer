@@ -56,6 +56,7 @@ public:
 class ScreenMesh :public Mesh
 {
 public:
+	GLint W, H;
 	ScreenMesh() {};
 	~ScreenMesh() {};
 	virtual void Resize(float w, float h);

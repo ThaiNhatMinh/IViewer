@@ -1,6 +1,6 @@
 #version 140
 
-uniform vec2 Proj;
+
 in vec2 Position;
 in vec2 UV;
 

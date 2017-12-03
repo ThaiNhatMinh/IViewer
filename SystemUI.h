@@ -14,6 +14,7 @@ private:
 	float m_MouseWhell;
 	float m_Time;
 	ImFont* m_Font;
+	ImFont* m_SysbolFont;
 protected:
 	void CreateFontsTexture();
 	
@@ -26,6 +27,10 @@ public:
 	ImFont* GetCurrentFont() {
 		return m_Font;
 	};
+	ImFont* GetSysbolFont()
+	{
+		return m_SysbolFont;
+	}
 	friend void ImGui_ImplGlfwGL3_MouseButtonCallback(GLFWwindow* w, int button, int action, int /*mods*/);
 	friend void ImGui_ImplGlfwGL3_ScrollCallback(GLFWwindow* w, double /*xoffset*/, double yoffset);
 };

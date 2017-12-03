@@ -3,6 +3,10 @@ enum DialogEnum
 {
 	D_STYLE_EDITOR,
 	D_BG_COLOR,
+	D_BG_TOOLS,
+	D_RESIZE,
+	D_ROTATE_LEFT,
+	D_ROTATE_RIGHT,
 	D_MAX_ENUM
 };
 
@@ -13,7 +17,9 @@ struct EXTData
 };
 class Application
 {
+	friend class Tool;
 public:
+
 	Application();
 	~Application();
 	void RunMainLoop();
@@ -34,6 +40,7 @@ protected:
 	ScreenMesh m_Screen;
 	Shader m_Shader;
 	bool DialogOption[D_MAX_ENUM];
+	vector<std::unique_ptr<Tool>> m_Tools;
 	EXTData m_SaveExt;
 	EXTData m_OpenExt;
 };

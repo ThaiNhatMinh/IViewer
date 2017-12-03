@@ -162,6 +162,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemUI.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Tool.h" />
     <ClInclude Include="Windows.h" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +183,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SystemUI.cpp" />
+    <ClCompile Include="Tool.cpp" />
     <ClCompile Include="Windows.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

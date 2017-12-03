@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Application.h"
 
 
@@ -10,7 +10,7 @@ Application::Application()
 	m_UI = std::unique_ptr<SystemUI>(new SystemUI(m_Window.get()));
 
 
-	m_CurrentImage = std::unique_ptr<Image>(new Image(m_Window->GetWindowSize()));
+	m_CurrentImage = nullptr;
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -24,6 +24,73 @@ Application::Application()
 	const char* B= "Jpeg\0*.JPG\0Windows Bitmap\0*.BMP\0Truevision Targa\0*.TGA\0DirectDraw Surface\0*.DDS\0";
 	memcpy(m_SaveExt.Format, B, 81);
 	m_SaveExt.NumFormat = 4;
+
+	Tool* OpenFile = new Tool("\xEF\x84\x95");
+	OpenFile->Action = [](Application* p)
+	{
+		p->OpenFile();
+	};
+	m_Tools.push_back(std::unique_ptr<Tool>(OpenFile)); //open
+
+	Tool* CloseFile = new Tool("\xEF\x80\x8D");
+	CloseFile->Action = [](Application* p)
+	{
+		Image* pI = p->m_CurrentImage.get();
+		if (pI)
+		{
+			 p->m_CurrentImage.release();
+			delete pI;
+		}
+	};
+	m_Tools.push_back(std::unique_ptr<Tool>(CloseFile));
+
+	Tool* SaveFile = new Tool("\xEF\x83\x87");
+	SaveFile->Action = [](Application* p)
+	{
+		
+		if (p->m_CurrentImage)
+		{
+			p->SaveFile();
+		}
+	};
+
+	//m_Tools.push_back(Tool("")); //save
+	//m_Tools.push_back(Tool("\xEF\x81\x84")); //edit\xEF\x80\x90
+	Tool* Undo = new Tool("\xEF\x83\xA2");
+	Undo->Action = [](Application* p)
+	{
+		Image* pI = p->m_CurrentImage.get();
+		if (pI) pI->Undo();
+	};
+	
+	m_Tools.push_back(std::unique_ptr<Tool>(Undo));
+
+	Tool* Redo = new Tool("\xEF\x80\x9E");
+	Redo->Action = [](Application* p)
+	{
+		Image* pI = p->m_CurrentImage.get();
+		if (pI) pI->Redo();
+	};
+
+	m_Tools.push_back(std::unique_ptr<Tool>(Redo));
+
+	Tool* ZoomIm = new Tool("\xEF\x80\x8E");
+	ZoomIm->Action = [](Application* p)
+	{
+		Image* pI = p->m_CurrentImage.get();
+		if (pI) pI->GetScale() += 0.1f;
+	};
+
+	m_Tools.push_back(std::unique_ptr<Tool>(ZoomIm));
+
+	Tool* ZoomOut = new Tool("\xEF\x80\x90");
+	ZoomOut->Action = [](Application* p)
+	{
+		Image* pI = p->m_CurrentImage.get();
+		if (pI) pI->GetScale() -= 0.1f;
+	};
+
+	m_Tools.push_back(std::unique_ptr<Tool>(ZoomOut));
 
 }
 
@@ -83,6 +150,7 @@ void Application::OpenFile()
 	if (GetOpenFileName(&ofn))
 		//cout << ofn.lpstrFile << endl;
 	{
+		m_CurrentImage = std::unique_ptr<Image>(new Image(m_Window->GetWindowSize(),&m_Shader));
 		m_CurrentImage->LoadTexture(ofn.lpstrFile);
 		//m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
 	}
@@ -148,67 +216,108 @@ void Application::SaveFileAs()
 	}
 }
 
+const int menubarHeight = 22;
+const int optionsbarHeight = 45;
 void Application::RenderUI()
 {
 
 	m_UI->NewFrame();
-
-	ImGui::PushFont(m_UI->GetCurrentFont());
-	if (ImGui::BeginMainMenuBar())
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 1.0f);
 	{
-		if (ImGui::BeginMenu("File"))
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.2,0.3,0.4,0.5));
 		{
-			if (ImGui::MenuItem("New", "CTRL+N")) {};
-			if (ImGui::MenuItem("Open", "CTRL+O")) OpenFile();
-			if (ImGui::MenuItem("Save", "CTRL+S")) SaveFile();
-			if (ImGui::MenuItem("Save As..", "CTRL+SHIFT+Z")) SaveFileAs();
-			if (ImGui::MenuItem("Close")) {}
-			ImGui::Separator();
-			if (ImGui::MenuItem("Quit")) m_Window->Close();
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Edit"))
-		{
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-			ImGui::Separator();
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Option"))
-		{
-			if (ImGui::MenuItem("BackGround Color")) DialogOption[D_BG_COLOR] = 1;
-			if (ImGui::MenuItem("Style Editor")) DialogOption[D_STYLE_EDITOR] = 1;
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Help"))
-		{
-			if (ImGui::MenuItem("About IViewer")) {}
-			ImGui::EndMenu();
-		}
-		ImGui::EndMainMenuBar();
-	}
+			ImGui::PushFont(m_UI->GetCurrentFont());
+			if (ImGui::BeginMainMenuBar())
+			{
+				if (ImGui::BeginMenu("File"))
+				{
+					if (ImGui::MenuItem("New", "CTRL+N")) {};
+					if (ImGui::MenuItem("Open", "CTRL+O")) OpenFile();
+					if (ImGui::MenuItem("Save", "CTRL+S")) SaveFile();
+					if (ImGui::MenuItem("Save As..", "CTRL+SHIFT+Z")) SaveFileAs();
+					if (ImGui::MenuItem("Close")) {}
+					ImGui::Separator();
+					if (ImGui::MenuItem("Quit")) m_Window->Close();
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Edit"))
+				{
+					if (ImGui::MenuItem("Undo", "CTRL+Z",false, (m_CurrentImage!=nullptr))&& m_CurrentImage) m_CurrentImage->Undo();
+					if (ImGui::MenuItem("Redo", "CTRL+Y", false, (m_CurrentImage != nullptr))&& m_CurrentImage) m_CurrentImage->Redo();  // Disabled item
+					ImGui::Separator();
+					if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+					if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+					if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+					ImGui::Separator();
+					if (ImGui::MenuItem("Resize")) DialogOption[D_RESIZE] = 1;
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Option"))
+				{
+					if (ImGui::MenuItem("BackGround Color")) DialogOption[D_BG_COLOR] = 1;
+					if (ImGui::MenuItem("Style Editor")) DialogOption[D_STYLE_EDITOR] = 1;
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Help"))
+				{
+					if (ImGui::MenuItem("About IViewer")) {}
+					ImGui::EndMenu();
+				}
+				ImGui::EndMainMenuBar();
+			}
 
-	if (DialogOption[D_BG_COLOR])
-	{
-		ImGui::Begin("Background Color", &DialogOption[D_BG_COLOR]);
-		ImGui::ColorEdit3("clear color", (float*)&m_Renderer->GetClearColor());
-		ImGui::End();
-	}
-	if (DialogOption[D_STYLE_EDITOR])
-	{
-		ImGui::Begin("Style Editor", &DialogOption[D_STYLE_EDITOR]); 
-		ImGui::ShowStyleEditor(); 
-		ImGui::End();
-	}
+			if (DialogOption[D_BG_COLOR])
+			{
+				ImGui::Begin("Background Color", &DialogOption[D_BG_COLOR]);
+				ImGui::ColorEdit3("clear color", (float*)&m_Renderer->GetClearColor());
+				ImGui::End();
+			}
+			if (DialogOption[D_STYLE_EDITOR])
+			{
+				ImGui::Begin("Style Editor", &DialogOption[D_STYLE_EDITOR]);
+				ImGui::ShowStyleEditor();
+				ImGui::End();
+			}
+			if (DialogOption[D_RESIZE])
+			{
+				ImGui::Begin("Resize", &DialogOption[D_RESIZE]);
+				ImGui::SetWindowSize(ImVec2(300, 150));
+				ImGui::Text("Size: %dx%d", (int)m_CurrentImage->GetSize().x, (int)m_CurrentImage->GetSize().y);
+				ImGui::SliderFloat("reiszeImage", &m_CurrentImage->GetScale(), 0.1f, 3.f);
+				int a = 1;
+				ImGui::Combo("Percent", &a, "25%\050%\075%\0200%\0");
+				if(ImGui::Button("Apply", ImVec2(40, 25))) m_CurrentImage->ApplyScale();
+				ImGui::End();
+			}
+			
 
-	ImGui::Begin("Style Editor", nullptr);
-	ImGui::SliderFloat("Slide", &m_CurrentImage->GetScale(), 0.1f, 2.0f);
-	ImGui::End();
+			ImGui::PopFont();
+		}
+		ImGui::PopStyleColor();
 
-	ImGui::PopFont();
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.20f, 0.20f, 0.47f, 0.60f));
+		{
+			//ImGui::PushFont(m_UI->GetSysbolFont());
+			ImGui::Begin("optionsBar", &DialogOption[D_BG_TOOLS], ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+			{
+				ImGui::SetWindowPos(ImVec2(0, menubarHeight));
+				ImGui::SetWindowSize(ImVec2(40, m_Window->GetWindowSize().y));
+
+				for (int i = 0; i < m_Tools.size(); i++)
+				{
+					ImGui::PushID(i);
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_Button]);
+					if (ImGui::Button(m_Tools[i]->Icon(), ImVec2(30, 30))) m_Tools[i]->Action(this);
+					ImGui::PopStyleColor(1);
+					ImGui::PopID();
+				}
+			}
+			ImGui::End();
+			//ImGui::PopFont();
+		}
+		ImGui::PopStyleColor();
+	}
+	ImGui::PopStyleVar();
 }
 
 void Application::RenderImage()
@@ -216,30 +325,34 @@ void Application::RenderImage()
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// 1. Render image to texture
 	GLuint index;
-	if (m_CurrentImage->HasTexture())
+	if (m_CurrentImage!=nullptr)
 	{
 		
-		index = m_CurrentImage->Render();
-		m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
+		//index = m_CurrentImage->Render();
+		//m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
 
 		// 2. Render to screen
 		vec2 size = m_Window->GetWindowSize();
-		glViewport(0, 0, size.x, size.y);
-		m_Renderer->Clear();
-		glClearColor(0.1, 0.1, 0.1, 1.0f);
-		m_Shader.Use();
+		//glViewport(0, 0, size.x, size.y);
+		//m_Renderer->Clear();
+		//glClearColor(0.1, 0.1, 0.1, 1.0f);
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, index);
+		m_Shader.Use();
 		m_Shader.SetUniform("Texture", 0);
-		mat4 m = glm::ortho(-size.x/2, size.x/2, -size.y/2, size.y/2);
-		//m = m*glm::translate(glm::mat4(), vec3(size.x / 2, size.y / 2, 0));
+		mat4 m = glm::ortho(-size.x / 2, size.x / 2, -size.y / 2, size.y / 2);
 		m_Shader.SetUniformMatrix("Proj", glm::value_ptr(m));
+
+		index = m_CurrentImage->Render();
+
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, index);
 		
-		glBindVertexArray(m_Screen.VAO);
-		glDrawArrays(m_Screen.Topology, 0, 4);
+		//m = m*glm::translate(glm::mat4(), vec3(size.x / 2, size.y / 2, 0));
+		
+		
+		//glBindVertexArray(m_Screen.VAO);
+		//glDrawArrays(m_Screen.Topology, 0, 4);
 	}
 
 }

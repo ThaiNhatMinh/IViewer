@@ -57,8 +57,8 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
 	
 }
 
@@ -71,7 +71,7 @@ void Mesh::Finalize(Shader* p)
 
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, m_Vertexs.size() * sizeof(DefaultVertex), &m_Vertexs[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_Vertexs.size() * sizeof(DefaultVertex), &m_Vertexs[0], GL_STREAM_DRAW);
 
 	
 	size_t stride = sizeof(DefaultVertex);
@@ -100,11 +100,6 @@ void Mesh::Finalize(Shader* p)
 
 void ScreenMesh::Resize(float w, float h)
 {
-	//m_Vertexs[0].pos = vec2(0,0);
-	//m_Vertexs[1].pos = vec2(0, h);
-	//m_Vertexs[2].pos = vec2(w, 0);
-	//m_Vertexs[3].pos = vec2(w, h);
-	cout << w << "  " << h << endl;
 	m_Vertexs[0].pos = vec2(-0.5f*w, 0.5f*h);
 	m_Vertexs[1].pos = vec2(-0.5f*w, -0.5f*h);
 	m_Vertexs[2].pos = vec2(0.5f*w, 0.5f*h);

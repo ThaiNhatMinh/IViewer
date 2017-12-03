@@ -155,7 +155,7 @@ SystemUI::SystemUI(Windows* w32):m_Time(0)
 
 	io.UserData = this;
 
-	io.Fonts->AddFontDefault();
+	//io.Fonts->AddFontDefault();
 	glfwSetWindowUserPointer(w, this);
 
 	glfwSetMouseButtonCallback(w, ImGui_ImplGlfwGL3_MouseButtonCallback);
@@ -171,13 +171,13 @@ SystemUI::SystemUI(Windows* w32):m_Time(0)
 
 
 	
-	m_Font = io.Fonts->AddFontFromFileTTF("Data\\Fonts\\gamefont_mh.ttf", 16.0f);
+	m_Font = io.Fonts->AddFontFromFileTTF("Data\\Fonts\\Roboto-Medium.ttf", 16.0f);
 
 	ImFontConfig config;
-	//config.MergeMode = true;
+	config.MergeMode = true;
 
-	//const ImWchar icons_ranges_fontawesome[] = { 0xf000, 0xf3ff, 0 };
-	//io.Fonts->AddFontFromFileTTF("Data\\Fonts\\fontawesome-webfont.ttf", 18.0f);
+	static const ImWchar icons_ranges_fontawesome[] = { 0xf000, 0xf3ff, 0 };
+	m_SysbolFont = io.Fonts->AddFontFromFileTTF("Data\\Fonts\\fontawesome-webfont.ttf", 18.0f,&config, icons_ranges_fontawesome);
 
 	//const ImWchar icons_ranges_googleicon[] = { 0xe000, 0xeb4c, 0 };
 	//io.Fonts->AddFontFromFileTTF("Data\\Fonts\\MaterialIcons-Regular.ttf", 18.0f, &config, icons_ranges_googleicon);
