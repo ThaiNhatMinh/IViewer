@@ -6,6 +6,7 @@ Image::Image(vec2 windowsize)
 	m_Shader = std::unique_ptr<Shader>(new Shader("Data\\Shader\\Quad.vs", "Data\\Shader\\Quad.fs"));
 	m_Quad.Finalize(m_Shader.get());
 	m_WinSize = windowsize;
+	m_Scale = 1.0f;
 
 }
 
@@ -36,6 +37,7 @@ void Image::LoadTexture(const char * file)
 
 	//iBpp = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
 	if (bpp == 24) iBpp = GL_RGB;
+	
 	else if (bpp == 32) iBpp = GL_RGBA;
 	iType = GL_RGB;
 	FrameBuffer fb(iWidth, iHeight, iBpp, iType);
@@ -58,8 +60,6 @@ void Image::LoadTexture(const char * file)
 	
 	iIndex = id;
 
-	
-	m_Quad.Resize(iWidth, iHeight);
 	hasload = 1;
 	
 	FreeImage_Unload(img_bm);
@@ -69,30 +69,55 @@ void Image::LoadTexture(const char * file)
 
 bool Image::SaveFile(const char * file)
 {
+	
 	FrameBuffer& fb = m_List.back();
 	
-	Render();
+	int newiWidth = iWidth*m_Scale;
+	int newiHeight = iHeight*m_Scale;
+	if (newiWidth != iWidth || newiHeight != iHeight)
+	{
+		fb.Resize(newiWidth, newiHeight);
+	}
+	fb.Bind();
+	glViewport(0, 0, newiWidth, newiHeight);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0, 0, 0, 1.0f);
+
+
+
+	m_Shader->Use();
+
+	m_Shader->SetUniform("Texture", 0);
+	glBindTexture(GL_TEXTURE_2D, iIndex);
+	glBindVertexArray(m_Quad.VAO);
+	glDrawArrays(m_Quad.Topology, 0, 4);
+	
+
 	GLint bpp;
 	if (iBpp == GL_RGB) bpp = 24;
 	else if (iBpp == GL_RGBA) bpp = 32;
-	FIBITMAP* img_bm = FreeImage_Allocate(iWidth, iHeight, 32);
+	
+	
+	FIBITMAP* img_bm = FreeImage_Allocate(newiWidth, newiHeight, bpp);
 	int* pixels = (int*)FreeImage_GetBits(img_bm);
 
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(0, 0, iWidth, iHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	if (FreeImage_Save(FREE_IMAGE_FORMAT::FIF_PNG, img_bm, file))
-	{
-		printf("Info: Save success !!");
-	}
-	else
-	{
-		printf("Info: Save fail !!");
-	}
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	
+	glReadPixels(0, 0, newiWidth, newiHeight, iBpp, GL_UNSIGNED_BYTE, pixels);
+
+	if (FreeImage_Save(FREE_IMAGE_FORMAT::FIF_JPEG, img_bm, file))printf("Info: Save success !!");
+	else printf("Info: Save fail !!");
 
 	// Clean up
 	FreeImage_Unload(img_bm);
+	fb.Resize(iWidth, iHeight);
+
+	glViewport(0, 0, iWidth, iHeight);
+	
+	fb.UnBind();
+
+	
 	return true;
 }
 
@@ -107,19 +132,22 @@ bool Image::HasTexture()
 }
 GLuint Image::Render()
 {
+
 	FrameBuffer& fb = m_List.back();
+	
 	fb.Bind();
 	glViewport(0, 0, iWidth, iHeight);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//glClearColor(1, 1, 1, 1.0f);
 	
-	glClearColor(1, 0, 0, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
 	
 
 	m_Shader->Use();
 	
-	m_Shader->SetUniform("screen", m_WinSize);
-	m_Shader->SetUniform("scale", 1.0f);
-	glActiveTexture(GL_TEXTURE0);
+	vec2 size(iWidth, iHeight);
+	mat4 m;// = glm::ortho(-size.x / 2, size.x / 2, -size.y / 2, size.y / 2);
+	m_Shader->SetUniformMatrix("Proj", glm::value_ptr(m));
+
 	m_Shader->SetUniform("Texture", 0);
 	glBindTexture(GL_TEXTURE_2D, iIndex);
 	glBindVertexArray(m_Quad.VAO);

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLRenderer.h"
 
-OpenGLRenderer::OpenGLRenderer(Windows* w):m_RenderName("OpenGL"),m_ClearColor(0.5f,0.8f,0.0f,1.0f),m_iClearFlag(0),m_DrawMode(GL_TRIANGLES)
+OpenGLRenderer::OpenGLRenderer(Windows* w):m_RenderName("OpenGL"),m_ClearColor(0.1f,0.1f,0.1f,1.0f),m_iClearFlag(0),m_DrawMode(GL_TRIANGLES)
 {
 	
 

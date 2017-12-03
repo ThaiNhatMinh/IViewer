@@ -31,7 +31,7 @@ protected:
 	std::unique_ptr<SystemUI> m_UI;
 	std::unique_ptr<Image> m_CurrentImage;
 
-	Mesh m_Screen;
+	ScreenMesh m_Screen;
 	Shader m_Shader;
 	bool DialogOption[D_MAX_ENUM];
 	EXTData m_SaveExt;

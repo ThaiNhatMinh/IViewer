@@ -98,19 +98,33 @@ void Mesh::Finalize(Shader* p)
 	Topology = GL_TRIANGLE_STRIP;
 }
 
-void Mesh::Resize(float w, float h)
+void ScreenMesh::Resize(float w, float h)
+{
+	//m_Vertexs[0].pos = vec2(0,0);
+	//m_Vertexs[1].pos = vec2(0, h);
+	//m_Vertexs[2].pos = vec2(w, 0);
+	//m_Vertexs[3].pos = vec2(w, h);
+	cout << w << "  " << h << endl;
+	m_Vertexs[0].pos = vec2(-0.5f*w, 0.5f*h);
+	m_Vertexs[1].pos = vec2(-0.5f*w, -0.5f*h);
+	m_Vertexs[2].pos = vec2(0.5f*w, 0.5f*h);
+	m_Vertexs[3].pos = vec2(0.5f*w, -0.5f*h);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER,4*sizeof(DefaultVertex), &m_Vertexs[0],GL_STREAM_DRAW);
+	glBindVertexArray(0);
+}
+
+void ImageMesh::Resize(float w, float h)
 {
 	m_Vertexs[0].pos = vec2(0,0);
 	m_Vertexs[1].pos = vec2(0, h);
 	m_Vertexs[2].pos = vec2(w, 0);
 	m_Vertexs[3].pos = vec2(w, h);
 
-	//m_Vertexs[0].pos = vec2(-0.5f*w, 0.5f*h);
-	//m_Vertexs[1].pos = vec2(-0.5f*w, -0.5f*h);
-	//m_Vertexs[2].pos = vec2(0.5f*w, 0.5f*h);
-	//m_Vertexs[3].pos = vec2(0.5f*w, -0.5f*h);
-
+	
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER,4*sizeof(DefaultVertex), &m_Vertexs[0],GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(DefaultVertex), &m_Vertexs[0], GL_STREAM_DRAW);
 }

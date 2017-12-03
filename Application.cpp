@@ -17,7 +17,7 @@ Application::Application()
 
 	m_Shader.Load("Data\\Shader\\Screen.vs", "Data\\Shader\\Screen.fs");
 	m_Screen.Finalize(&m_Shader);	
-
+	
 	const char* A = "Jpeg\0*.JPG\0Windows Bitmap\0*.BMP\0Truevision Targa\0*.TGA\0Adobe PhotoShop\0*.psd\0DirectDraw Surface\0*.DDS\0";
 	memcpy(m_OpenExt.Format, A, 103);
 	m_OpenExt.NumFormat = 5;
@@ -47,11 +47,13 @@ void Application::RunMainLoop()
 		
 		m_Renderer->Clear();
 
-		RenderImage();
-
 		RenderUI();
 
+		RenderImage();
+
 		
+
+		ImGui::Render();
 	
 		m_Renderer->SwapBuffer();
 	}
@@ -82,6 +84,7 @@ void Application::OpenFile()
 		//cout << ofn.lpstrFile << endl;
 	{
 		m_CurrentImage->LoadTexture(ofn.lpstrFile);
+		//m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
 	}
 }
 
@@ -111,13 +114,14 @@ void Application::SaveFileAs()
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_SHOWHELP | OFN_OVERWRITEPROMPT;
+	ofn.lpstrDefExt = "jpg";
 	if (GetSaveFileName(&ofn))
 	{
-		cout << ofn.nFilterIndex << endl;
-		int i = 1;
+		//cout << ofn.nFilterIndex << endl;
+		/*int i = 1;
 		int pos = 0;
 		char num = 0;
-		const char* B = "Jpeg\0*.JPG\0Windows Bitmap\0*.BMP\0Truevision Targa\0*.TGA\0DirectDraw Surface\0*.DDS\0";
+		//const char* B = "Jpeg\0*.JPG\0Windows Bitmap\0*.BMP\0Truevision Targa\0*.TGA\0DirectDraw Surface\0*.DDS\0";
 		char ext[5];
 		ext[4]='\0';
 		while (num<m_SaveExt.NumFormat)
@@ -139,8 +143,8 @@ void Application::SaveFileAs()
 			i++;
 		}
 		char path[512];
-		sprintf(path, "%s%s", ofn.lpstrFile, ext);
-		m_CurrentImage->SaveFile(path);
+		sprintf(path, "%s%s", ofn.lpstrFile, ext);*/
+		m_CurrentImage->SaveFile(ofn.lpstrFile);
 	}
 }
 
@@ -199,8 +203,12 @@ void Application::RenderUI()
 		ImGui::ShowStyleEditor(); 
 		ImGui::End();
 	}
+
+	ImGui::Begin("Style Editor", nullptr);
+	ImGui::SliderFloat("Slide", &m_CurrentImage->GetScale(), 0.1f, 2.0f);
+	ImGui::End();
+
 	ImGui::PopFont();
-	ImGui::Render();
 }
 
 void Application::RenderImage()
@@ -214,16 +222,22 @@ void Application::RenderImage()
 	{
 		
 		index = m_CurrentImage->Render();
-		
+		m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
 
 		// 2. Render to screen
-		glViewport(0, 0, m_Window->GetWindowSize().x, m_Window->GetWindowSize().y);
+		vec2 size = m_Window->GetWindowSize();
+		glViewport(0, 0, size.x, size.y);
 		m_Renderer->Clear();
+		glClearColor(0.1, 0.1, 0.1, 1.0f);
 		m_Shader.Use();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, index);
 		m_Shader.SetUniform("Texture", 0);
+		mat4 m = glm::ortho(-size.x/2, size.x/2, -size.y/2, size.y/2);
+		//m = m*glm::translate(glm::mat4(), vec3(size.x / 2, size.y / 2, 0));
+		m_Shader.SetUniformMatrix("Proj", glm::value_ptr(m));
+		
 		glBindVertexArray(m_Screen.VAO);
 		glDrawArrays(m_Screen.Topology, 0, 4);
 	}

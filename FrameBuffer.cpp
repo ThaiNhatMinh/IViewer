@@ -25,6 +25,10 @@ FrameBuffer::FrameBuffer(GLuint w, GLuint h,GLenum internalformat,GLenum format)
 		cout << "Framebuffer not complete.";
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	iWidth = w;
+	iHeight = h;
+	iBpp = internalformat;
+	iType = format;
 }
 
 
@@ -32,6 +36,20 @@ FrameBuffer::~FrameBuffer()
 {
 	glDeleteFramebuffers(1,&FBO);
 
+}
+
+void FrameBuffer::Resize(int w, int h)
+{
+	glBindTexture(GL_TEXTURE_2D, iIndex);
+	glTexImage2D(GL_TEXTURE_2D, 0, iBpp, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	iWidth = w;
+	iHeight = h;
 }
 
 void FrameBuffer::Bind()

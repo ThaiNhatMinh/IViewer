@@ -35,6 +35,8 @@ public:
 
 		return *this;
 	}
+
+	void Resize(int w, int h);
 	void Bind();
 	void UnBind();
 	GLuint FBO;
@@ -42,5 +44,7 @@ public:
 	GLuint depth;
 	GLuint iWidth;
 	GLuint iHeight;
+	GLuint iBpp;
+	GLuint iType;
 };
 

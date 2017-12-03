@@ -37,10 +37,26 @@ public:
 	vector<DefaultVertex>	m_Vertexs;
 public:
 	Mesh();
-	~Mesh();
+	virtual ~Mesh();
 
 	// dirive class can redifine this function to add more data;
 	void Finalize(Shader* p);
-	void Resize(float w, float h);
+	virtual void Resize(float w, float h)=0;
 	
+};
+
+class ImageMesh:public Mesh
+{
+public:
+	ImageMesh() {};
+	~ImageMesh() {};
+	virtual void Resize(float w, float h);
+};
+
+class ScreenMesh :public Mesh
+{
+public:
+	ScreenMesh() {};
+	~ScreenMesh() {};
+	virtual void Resize(float w, float h);
 };

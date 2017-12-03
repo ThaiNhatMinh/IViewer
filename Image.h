@@ -16,12 +16,14 @@ public:
 	bool hasload = 0;
 	bool HasTexture();
 	GLuint Render();
+	float &GetScale() { return m_Scale; }
+	vec2& GetSize() { return vec2(iWidth, iHeight)*m_Scale; };
 private:
 	std::unique_ptr<Shader> m_Shader;
-	Mesh m_Quad;
+	ScreenMesh m_Quad;
 	string m_Path;
 	vec2 m_WinSize;
-	
+	float m_Scale;
 
 };
 
