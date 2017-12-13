@@ -121,6 +121,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Action\Action.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="Image.h" />
@@ -166,6 +169,7 @@
     <ClInclude Include="Windows.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Action\Action.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="Image.cpp" />

@@ -16,6 +16,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{fc407fef-5b4e-4733-88e3-c6fe7906e370}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Action">
+      <UniqueIdentifier>{7bb78929-fb8c-4df3-87af-644b2b588b24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -69,6 +72,9 @@
     <ClInclude Include="Tool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Action\Action.h">
+      <Filter>Action</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -112,6 +118,9 @@
     </ClCompile>
     <ClCompile Include="Tool.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Action\Action.cpp">
+      <Filter>Action</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -7,7 +7,7 @@ Image::Image(vec2 windowsize,Shader* p):m_Shader(p)
 	
 	m_WinSize = windowsize;
 	m_Scale = 1.0f;
-	frameindex = -1;
+	m_iCurrentAction = -1;
 
 }
 
@@ -60,15 +60,9 @@ void Image::LoadTexture(const char * file)
 	newMesh.W = iWidth;
 	newMesh.H = iHeight;
 	
-	ImageState state;
-	state.type = AC_DEFAULT;
-	state.mesh = newMesh;
-	state.buffer = nullptr;
-	m_List.push_back(state);
 
 	m_CurrentMesh = newMesh;
 	
-	frameindex = 0;
 	iIndex = id;
 	m_Path = file;
 
@@ -77,9 +71,23 @@ void Image::LoadTexture(const char * file)
 
 }
 
+FREE_IMAGE_FORMAT ExtToFreeExt(const char* ext)
+{
+	if (!strcmp(ext, ".jpg")) return FREE_IMAGE_FORMAT::FIF_JPEG;
+	else if(!strcmp(ext, ".bmp"))return FREE_IMAGE_FORMAT::FIF_BMP;
+	//else if (!strcmp(ext, ".dds"))return FREE_IMAGE_FORMAT::FIF_DDS;
+	else if (!strcmp(ext, ".ico"))return FREE_IMAGE_FORMAT::FIF_ICO;
+	else if (!strcmp(ext, ".png"))return FREE_IMAGE_FORMAT::FIF_PNG;
+	//else if (!strcmp(ext, ".psd"))return FREE_IMAGE_FORMAT::FIF_PSD;
+	else if (!strcmp(ext, ".tga"))return FREE_IMAGE_FORMAT::FIF_TARGA;
+	else if (!strcmp(ext, ".bmp"))return FREE_IMAGE_FORMAT::FIF_BMP;
+
+}
+
+
 bool Image::SaveFile(const char * file)
 {
-	ScreenMesh mesh = m_List[frameindex].mesh;
+	ScreenMesh mesh = m_CurrentMesh;
 	mesh.Resize(mesh.W, mesh.H);
 	FrameBuffer fb(mesh.W, mesh.H, iBpp, iType);
 	
@@ -128,8 +136,8 @@ bool Image::SaveFile(const char * file)
 
 Image::~Image()
 {
-	for (size_t i = 0; i < m_List.size(); i++)
-		delete m_List[i].buffer;
+	
+
 }
 
 GLuint Image::Render()
@@ -152,6 +160,9 @@ GLuint Image::Render()
 
 	//m_Shader->SetUniform("Texture", 0);
 	m_CurrentMesh.Resize(m_Scale*iWidth, m_Scale*iHeight);
+
+	for (size_t i = 0; i < m_ActionList.size(); i++)
+		m_ActionList[i]->Do();
 	glBindTexture(GL_TEXTURE_2D, iIndex);
 	glBindVertexArray(m_CurrentMesh.VAO);
 	glDrawArrays(m_CurrentMesh.Topology, 0, 4);
@@ -164,32 +175,17 @@ GLuint Image::Render()
 void Image::ApplyScale()
 {
 	
-
+	
 	int newiWidth = iWidth*m_Scale;
 	int newiHeight = iHeight*m_Scale;
 
 	// Check if anything change
 	if ((newiWidth- iWidth)<10 && (newiHeight- iHeight)<10) return;
 
-	// Create new state of image
-	ScreenMesh newMesh;
-	newMesh.Finalize(m_Shader);
-	newMesh.Resize(newiWidth, newiHeight);
-	newMesh.W = newiWidth;
-	newMesh.H = newiHeight;
-	ImageState state;
-	state.type = AC_RESIZE;
-	state.mesh = newMesh;
-	state.buffer = new float;
-	*(float*)state.buffer = m_Scale;
-	m_List.push_back(state);
+	ResizeAction* pAc = new ResizeAction(this, vec2(newiWidth, newiHeight), vec2(iWidth, iHeight));
 
-
-	iWidth = newiWidth;
-	iHeight = newiHeight;
-	m_Scale = 1;
-	m_CurrentMesh = newMesh;
-	frameindex++;
+	m_ActionList.push_back(std::unique_ptr<IAction>(pAc));
+	m_iCurrentAction++;
 
 	
 
@@ -197,28 +193,32 @@ void Image::ApplyScale()
 
 void Image::Undo()
 {
-	if (frameindex != -1 && frameindex > 0)
+	if (m_iCurrentAction != -1 && m_iCurrentAction > 0)
 	{
-		frameindex--;
+		m_iCurrentAction--;
 
-		m_CurrentMesh = m_List[frameindex].mesh;
-
-		iWidth = m_CurrentMesh.W;
-		iHeight = m_CurrentMesh.H;
-		m_Scale = 1;
+		m_ActionList[m_iCurrentAction]->Undo();
 	}
 	
 }
 
 void Image::Redo()
 {
-	if (frameindex < m_List.size() - 1)
+	if (m_iCurrentAction < m_ActionList.size() - 1)
 	{
-		frameindex++;
-		m_CurrentMesh = m_List[frameindex].mesh;
-
-		iWidth = m_CurrentMesh.W;
-		iHeight = m_CurrentMesh.H;
-		m_Scale = 1;
+		m_iCurrentAction++;
+		m_ActionList[m_iCurrentAction]->Redo();
 	}
+}
+
+bool Image::CanUndo()
+{
+	if (m_iCurrentAction == -1) return false;
+	return true;
+}
+
+bool Image::CanRedo()
+{
+	if (m_iCurrentAction == -1) return false;
+	return true;
 }

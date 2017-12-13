@@ -17,6 +17,7 @@ struct ImageState
 };
 class Image
 {
+	friend class IAction;
 public:
 	Image(vec2 windowsize, Shader* p);
 	void LoadTexture(const char* file);
@@ -24,11 +25,13 @@ public:
 	~Image();
 
 	//vector<FrameBuffer> m_List;
-	vector<ImageState> m_List;
+	vector<std::unique_ptr<IAction>> m_ActionList;
 	GLuint iIndex; // Texture index
 	GLuint iWidth; // 
 	GLuint iHeight;
 	GLuint iType, iBpp;
+	float m_Scale;
+	ScreenMesh m_CurrentMesh;
 
 	GLuint Render();
 	float &GetScale() { return m_Scale; }
@@ -37,14 +40,16 @@ public:
 	void ApplyScale();
 	void Undo();
 	void Redo();
+	bool CanUndo();
+	bool CanRedo();
 private:
 	Shader* m_Shader;
-	ScreenMesh m_CurrentMesh;
+	
 	string m_Path;
 	char m_Ext[5];
 	vec2 m_WinSize;
-	float m_Scale;
-	int frameindex;
+	
+	int m_iCurrentAction;
 
 };
 

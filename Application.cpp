@@ -285,8 +285,11 @@ void Application::RenderUI()
 				ImGui::Text("Size: %dx%d", (int)m_CurrentImage->GetSize().x, (int)m_CurrentImage->GetSize().y);
 				ImGui::SliderFloat("reiszeImage", &m_CurrentImage->GetScale(), 0.1f, 3.f);
 				int a = 1;
-				ImGui::Combo("Percent", &a, "25%\050%\075%\0200%\0");
-				if(ImGui::Button("Apply", ImVec2(40, 25))) m_CurrentImage->ApplyScale();
+				ImGui::Combo("Percent", &a, " 25%\0 50%\0 75%\0 200%\0");
+				if (ImGui::Button("Apply", ImVec2(40, 25)))
+				{
+					m_CurrentImage->ApplyScale();
+				}
 				ImGui::End();
 			}
 			
