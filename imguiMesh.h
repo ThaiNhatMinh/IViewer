@@ -60,4 +60,5 @@ public:
 	ScreenMesh() {};
 	~ScreenMesh() {};
 	virtual void Resize(float w, float h);
+	void UpdateBuffer();
 };

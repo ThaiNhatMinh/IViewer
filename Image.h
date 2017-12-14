@@ -42,7 +42,10 @@ public:
 	void Redo();
 	bool CanUndo();
 	bool CanRedo();
+	void ApplyAction(IAction*);
 private:
+
+	int m_bJustRedo;
 	Shader* m_Shader;
 	
 	string m_Path;

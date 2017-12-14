@@ -23,3 +23,13 @@ public:
 	virtual void Undo();
 	virtual void Redo();
 };
+
+class RotateAction :public IAction
+{
+private:
+	float angle;
+public:
+	RotateAction(Image* p, float angle);
+	virtual void Undo();
+	virtual void Redo();
+};

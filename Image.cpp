@@ -8,6 +8,7 @@ Image::Image(vec2 windowsize,Shader* p):m_Shader(p)
 	m_WinSize = windowsize;
 	m_Scale = 1.0f;
 	m_iCurrentAction = -1;
+	m_bJustRedo = 0;
 
 }
 
@@ -81,12 +82,15 @@ FREE_IMAGE_FORMAT ExtToFreeExt(const char* ext)
 	//else if (!strcmp(ext, ".psd"))return FREE_IMAGE_FORMAT::FIF_PSD;
 	else if (!strcmp(ext, ".tga"))return FREE_IMAGE_FORMAT::FIF_TARGA;
 	else if (!strcmp(ext, ".bmp"))return FREE_IMAGE_FORMAT::FIF_BMP;
-
+	else return FREE_IMAGE_FORMAT::FIF_JPEG;
 }
 
 
 bool Image::SaveFile(const char * file)
 {
+	int len = strlen(file);
+	const char* a = &file[len - 4];
+	
 	ScreenMesh mesh = m_CurrentMesh;
 	mesh.Resize(mesh.W, mesh.H);
 	FrameBuffer fb(mesh.W, mesh.H, iBpp, iType);
@@ -122,7 +126,7 @@ bool Image::SaveFile(const char * file)
 	
 	glReadPixels(0, 0, mesh.W, mesh.H, iBpp, GL_UNSIGNED_BYTE, pixels);
 
-	if (FreeImage_Save(FREE_IMAGE_FORMAT::FIF_JPEG, img_bm, file))printf("Info: Save success !!");
+	if (FreeImage_Save(ExtToFreeExt(a), img_bm, file))printf("Info: Save success !!");
 	else printf("Info: Save fail !!");
 
 	// Clean up
@@ -143,22 +147,7 @@ Image::~Image()
 GLuint Image::Render()
 {
 
-	//FrameBuffer& fb = m_List.back();
 	
-	//fb.Bind();
-	//glViewport(0, 0, iWidth, iHeight);
-	//glClear(GL_COLOR_BUFFER_BIT);
-	//glClearColor(1, 1, 1, 1.0f);
-	
-	
-
-	//m_Shader->Use();
-	
-	//vec2 size(iWidth, iHeight);
-	//mat4 m;// = glm::ortho(-size.x / 2, size.x / 2, -size.y / 2, size.y / 2);
-	//m_Shader->SetUniformMatrix("Proj", glm::value_ptr(m));
-
-	//m_Shader->SetUniform("Texture", 0);
 	m_CurrentMesh.Resize(m_Scale*iWidth, m_Scale*iHeight);
 
 	for (size_t i = 0; i < m_ActionList.size(); i++)
@@ -168,7 +157,7 @@ GLuint Image::Render()
 	glDrawArrays(m_CurrentMesh.Topology, 0, 4);
 	
 	
-	//fb.UnBind();
+	
 	return iIndex;
 }
 
@@ -193,32 +182,45 @@ void Image::ApplyScale()
 
 void Image::Undo()
 {
-	if (m_iCurrentAction != -1 && m_iCurrentAction > 0)
+	if (m_iCurrentAction != -1 && m_iCurrentAction >= 0)
 	{
-		m_iCurrentAction--;
+		
 
 		m_ActionList[m_iCurrentAction]->Undo();
+		m_iCurrentAction--;
+		m_bJustRedo += 1;
 	}
 	
 }
 
 void Image::Redo()
 {
-	if (m_iCurrentAction < m_ActionList.size() - 1)
+	int size = m_ActionList.size();
+	if (m_iCurrentAction <=size- 1)
 	{
 		m_iCurrentAction++;
+		m_bJustRedo--;
 		m_ActionList[m_iCurrentAction]->Redo();
+		
 	}
 }
 
 bool Image::CanUndo()
 {
-	if (m_iCurrentAction == -1) return false;
+	if (m_iCurrentAction <0) return false;
 	return true;
 }
 
 bool Image::CanRedo()
 {
-	if (m_iCurrentAction == -1) return false;
-	return true;
+	if (m_bJustRedo>0) return true;
+	
+	return false;
+}
+
+void Image::ApplyAction(IAction *pAc)
+{
+	m_ActionList.push_back(std::unique_ptr<IAction>(pAc));
+	pAc->Redo();
+	m_iCurrentAction++;
 }

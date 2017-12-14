@@ -21,7 +21,7 @@ Application::Application()
 	const char* A = "Jpeg\0*.JPG\0Windows Bitmap\0*.BMP\0Truevision Targa\0*.TGA\0Adobe PhotoShop\0*.psd\0DirectDraw Surface\0*.DDS\0";
 	memcpy(m_OpenExt.Format, A, 103);
 	m_OpenExt.NumFormat = 5;
-	const char* B= "Jpeg\0*.JPG\0Windows Bitmap\0*.BMP\0Truevision Targa\0*.TGA\0DirectDraw Surface\0*.DDS\0";
+	const char* B= "Jpeg\0*.jpg\0Windows Bitmap\0*.bmp\0Icon\0*.ico\0Portable Network Graphics\0*.png\0Truevision Targa\0*.tga\0";
 	memcpy(m_SaveExt.Format, B, 81);
 	m_SaveExt.NumFormat = 4;
 
@@ -242,14 +242,29 @@ void Application::RenderUI()
 				}
 				if (ImGui::BeginMenu("Edit"))
 				{
-					if (ImGui::MenuItem("Undo", "CTRL+Z",false, (m_CurrentImage!=nullptr))&& m_CurrentImage) m_CurrentImage->Undo();
-					if (ImGui::MenuItem("Redo", "CTRL+Y", false, (m_CurrentImage != nullptr))&& m_CurrentImage) m_CurrentImage->Redo();  // Disabled item
+					bool canUndo = m_CurrentImage!=nullptr ? (m_CurrentImage->CanUndo() ? true : false) : false;
+					bool canRedo = m_CurrentImage != nullptr ? (m_CurrentImage->CanRedo() ? true : false) : false;
+
+					if (ImGui::MenuItem("Undo", "CTRL+Z",false, canUndo)) m_CurrentImage->Undo();
+					if (ImGui::MenuItem("Redo", "CTRL+Y", false, canRedo)) m_CurrentImage->Redo();  // Disabled item
 					ImGui::Separator();
 					if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 					if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 					if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 					ImGui::Separator();
-					if (ImGui::MenuItem("Resize")) DialogOption[D_RESIZE] = 1;
+					if (ImGui::MenuItem("Resize",nullptr, false, (m_CurrentImage != nullptr))) DialogOption[D_RESIZE] = 1;
+					if (ImGui::MenuItem("Rotate left", nullptr, false, (m_CurrentImage != nullptr)))
+					{
+						RotateAction* Rotate = new RotateAction(m_CurrentImage.get(), -90.0f);
+						m_CurrentImage->ApplyAction(Rotate);
+
+					}
+					if (ImGui::MenuItem("Rotate right", nullptr, false, (m_CurrentImage != nullptr)))
+					{
+						RotateAction* Rotate = new RotateAction(m_CurrentImage.get(), 90.0f);
+						m_CurrentImage->ApplyAction(Rotate);
+
+					}
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Option"))

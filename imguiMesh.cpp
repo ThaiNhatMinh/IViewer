@@ -105,9 +105,19 @@ void ScreenMesh::Resize(float w, float h)
 	m_Vertexs[2].pos = vec2(0.5f*w, 0.5f*h);
 	m_Vertexs[3].pos = vec2(0.5f*w, -0.5f*h);
 
+	this->W = w;
+	this->H = h;
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER,4*sizeof(DefaultVertex), &m_Vertexs[0],GL_STREAM_DRAW);
+	glBindVertexArray(0);
+}
+
+void ScreenMesh::UpdateBuffer()
+{
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(DefaultVertex), &m_Vertexs[0], GL_STREAM_DRAW);
 	glBindVertexArray(0);
 }
 
