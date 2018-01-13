@@ -5,12 +5,13 @@
 Application::Application()
 {
 	
+	m_iActiveImage = -1;
 	m_Window = std::unique_ptr<Windows>(new Windows());
 	m_Renderer = std::unique_ptr<OpenGLRenderer>(new OpenGLRenderer(m_Window.get()));
 	m_UI = std::unique_ptr<SystemUI>(new SystemUI(m_Window.get()));
 
 
-	m_CurrentImage = nullptr;
+	//m_CurrentImage = nullptr;
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -35,11 +36,14 @@ Application::Application()
 	Tool* CloseFile = new Tool("\xEF\x80\x8D");
 	CloseFile->Action = [](Application* p)
 	{
-		Image* pI = p->m_CurrentImage.get();
+		if (p->m_iActiveImage == -1) return;
+		Image* pI = p->m_CurrentImage[p->m_iActiveImage].get();
 		if (pI)
 		{
-			 p->m_CurrentImage.release();
+			 p->m_CurrentImage[p->m_iActiveImage].release();
+			 p->m_CurrentImage.pop_back();
 			delete pI;
+			p->m_iActiveImage--;
 		}
 	};
 	m_Tools.push_back(std::unique_ptr<Tool>(CloseFile));
@@ -47,8 +51,8 @@ Application::Application()
 	Tool* SaveFile = new Tool("\xEF\x83\x87");
 	SaveFile->Action = [](Application* p)
 	{
-		
-		if (p->m_CurrentImage)
+		if (p->m_iActiveImage == -1) return;
+		if (p->m_CurrentImage[p->m_iActiveImage])
 		{
 			p->SaveFile();
 		}
@@ -59,8 +63,10 @@ Application::Application()
 	Tool* Undo = new Tool("\xEF\x83\xA2");
 	Undo->Action = [](Application* p)
 	{
-		Image* pI = p->m_CurrentImage.get();
-		if (pI) pI->Undo();
+		if (p->m_iActiveImage == -1) return;
+		if (p->m_CurrentImage[p->m_iActiveImage] == nullptr) return;
+		RotateAction* Rotate = new RotateAction(p->m_CurrentImage[p->m_iActiveImage].get(), -90.0f);
+		p->m_CurrentImage[p->m_iActiveImage]->ApplyAction(Rotate);
 	};
 	
 	m_Tools.push_back(std::unique_ptr<Tool>(Undo));
@@ -68,8 +74,10 @@ Application::Application()
 	Tool* Redo = new Tool("\xEF\x80\x9E");
 	Redo->Action = [](Application* p)
 	{
-		Image* pI = p->m_CurrentImage.get();
-		if (pI) pI->Redo();
+		if (p->m_iActiveImage == -1) return;
+		if (p->m_CurrentImage[p->m_iActiveImage] == nullptr) return;
+		RotateAction* Rotate = new RotateAction(p->m_CurrentImage[p->m_iActiveImage].get(), 90.0f);
+		p->m_CurrentImage[p->m_iActiveImage]->ApplyAction(Rotate);
 	};
 
 	m_Tools.push_back(std::unique_ptr<Tool>(Redo));
@@ -77,7 +85,8 @@ Application::Application()
 	Tool* ZoomIm = new Tool("\xEF\x80\x8E");
 	ZoomIm->Action = [](Application* p)
 	{
-		Image* pI = p->m_CurrentImage.get();
+		if (p->m_iActiveImage == -1) return;
+		Image* pI = p->m_CurrentImage[p->m_iActiveImage].get();
 		if (pI) pI->GetScale() += 0.1f;
 	};
 
@@ -86,7 +95,8 @@ Application::Application()
 	Tool* ZoomOut = new Tool("\xEF\x80\x90");
 	ZoomOut->Action = [](Application* p)
 	{
-		Image* pI = p->m_CurrentImage.get();
+		if (p->m_iActiveImage == -1) return;
+		Image* pI = p->m_CurrentImage[p->m_iActiveImage].get();
 		if (pI) pI->GetScale() -= 0.1f;
 	};
 
@@ -150,8 +160,10 @@ void Application::OpenFile()
 	if (GetOpenFileName(&ofn))
 		//cout << ofn.lpstrFile << endl;
 	{
-		m_CurrentImage = std::unique_ptr<Image>(new Image(m_Window->GetWindowSize(),&m_Shader));
-		m_CurrentImage->LoadTexture(ofn.lpstrFile);
+		m_CurrentImage.push_back(std::unique_ptr<Image>(new Image(m_Window->GetWindowSize(),&m_Shader)));
+		m_iActiveImage++;
+
+		m_CurrentImage[m_iActiveImage]->LoadTexture(ofn.lpstrFile);
 		//m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
 	}
 }
@@ -212,7 +224,9 @@ void Application::SaveFileAs()
 		}
 		char path[512];
 		sprintf(path, "%s%s", ofn.lpstrFile, ext);*/
-		m_CurrentImage->SaveFile(ofn.lpstrFile);
+		if (m_iActiveImage == -1) return;
+		if (m_iActiveImage >= m_CurrentImage.size()) return;
+		m_CurrentImage[m_iActiveImage]->SaveFile(ofn.lpstrFile);
 	}
 }
 
@@ -242,27 +256,28 @@ void Application::RenderUI()
 				}
 				if (ImGui::BeginMenu("Edit"))
 				{
-					bool canUndo = m_CurrentImage!=nullptr ? (m_CurrentImage->CanUndo() ? true : false) : false;
-					bool canRedo = m_CurrentImage != nullptr ? (m_CurrentImage->CanRedo() ? true : false) : false;
+					bool canUndo = (m_iActiveImage==-1)? false :(m_CurrentImage[m_iActiveImage]!=nullptr ? (m_CurrentImage[m_iActiveImage]->CanUndo() ? true : false) : false);
+					bool canRedo = (m_iActiveImage == -1) ? false : (m_CurrentImage[m_iActiveImage] != nullptr ? (m_CurrentImage[m_iActiveImage]->CanRedo() ? true : false) : false);
 
-					if (ImGui::MenuItem("Undo", "CTRL+Z",false, canUndo)) m_CurrentImage->Undo();
-					if (ImGui::MenuItem("Redo", "CTRL+Y", false, canRedo)) m_CurrentImage->Redo();  // Disabled item
+					if (ImGui::MenuItem("Undo", "CTRL+Z",false, canUndo)) m_CurrentImage[m_iActiveImage]->Undo();
+					if (ImGui::MenuItem("Redo", "CTRL+Y", false, canRedo)) m_CurrentImage[m_iActiveImage]->Redo();  // Disabled item
 					ImGui::Separator();
 					if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 					if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 					if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 					ImGui::Separator();
-					if (ImGui::MenuItem("Resize",nullptr, false, (m_CurrentImage != nullptr))) DialogOption[D_RESIZE] = 1;
-					if (ImGui::MenuItem("Rotate left", nullptr, false, (m_CurrentImage != nullptr)))
+					bool can = (m_iActiveImage == -1) ? false : true;
+					if (ImGui::MenuItem("Resize",nullptr, false, can)) DialogOption[D_RESIZE] = 1;
+					if (ImGui::MenuItem("Rotate left", nullptr, false, can))
 					{
-						RotateAction* Rotate = new RotateAction(m_CurrentImage.get(), -90.0f);
-						m_CurrentImage->ApplyAction(Rotate);
+						RotateAction* Rotate = new RotateAction(m_CurrentImage[m_iActiveImage].get(), -90.0f);
+						m_CurrentImage[m_iActiveImage]->ApplyAction(Rotate);
 
 					}
-					if (ImGui::MenuItem("Rotate right", nullptr, false, (m_CurrentImage != nullptr)))
+					if (ImGui::MenuItem("Rotate right", nullptr, false, can))
 					{
-						RotateAction* Rotate = new RotateAction(m_CurrentImage.get(), 90.0f);
-						m_CurrentImage->ApplyAction(Rotate);
+						RotateAction* Rotate = new RotateAction(m_CurrentImage[m_iActiveImage].get(), 90.0f);
+						m_CurrentImage[m_iActiveImage]->ApplyAction(Rotate);
 
 					}
 					ImGui::EndMenu();
@@ -275,12 +290,19 @@ void Application::RenderUI()
 				}
 				if (ImGui::BeginMenu("Help"))
 				{
-					if (ImGui::MenuItem("About IViewer")) {}
+					if (ImGui::MenuItem("About IViewer")) ImGui::OpenPopup("About");
 					ImGui::EndMenu();
 				}
 				ImGui::EndMainMenuBar();
 			}
 
+			if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("Software develop by No Name Team.\n University of Science 2015-2019");
+				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+				ImGui::EndPopup();
+
+			}
 			if (DialogOption[D_BG_COLOR])
 			{
 				ImGui::Begin("Background Color", &DialogOption[D_BG_COLOR]);
@@ -295,15 +317,17 @@ void Application::RenderUI()
 			}
 			if (DialogOption[D_RESIZE])
 			{
+				if (m_iActiveImage == -1) return;
+
 				ImGui::Begin("Resize", &DialogOption[D_RESIZE]);
 				ImGui::SetWindowSize(ImVec2(300, 150));
-				ImGui::Text("Size: %dx%d", (int)m_CurrentImage->GetSize().x, (int)m_CurrentImage->GetSize().y);
-				ImGui::SliderFloat("reiszeImage", &m_CurrentImage->GetScale(), 0.1f, 3.f);
+				ImGui::Text("Size: %dx%d", (int)m_CurrentImage[m_iActiveImage]->GetSize().x, (int)m_CurrentImage[m_iActiveImage]->GetSize().y);
+				ImGui::SliderFloat("reiszeImage", &m_CurrentImage[m_iActiveImage]->GetScale(), 0.1f, 3.f);
 				int a = 1;
 				ImGui::Combo("Percent", &a, " 25%\0 50%\0 75%\0 200%\0");
 				if (ImGui::Button("Apply", ImVec2(40, 25)))
 				{
-					m_CurrentImage->ApplyScale();
+					m_CurrentImage[m_iActiveImage]->ApplyScale();
 				}
 				ImGui::End();
 			}
@@ -313,7 +337,7 @@ void Application::RenderUI()
 		}
 		ImGui::PopStyleColor();
 
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.20f, 0.20f, 0.47f, 0.60f));
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.20f, 0.20f, 0.47f, 0.50f));
 		{
 			//ImGui::PushFont(m_UI->GetSysbolFont());
 			ImGui::Begin("optionsBar", &DialogOption[D_BG_TOOLS], ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
@@ -331,7 +355,21 @@ void Application::RenderUI()
 				}
 			}
 			ImGui::End();
-			//ImGui::PopFont();
+			
+			ImGui::Begin("ImageList", &DialogOption[D_IMAGE_LIST], ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+			{
+				ImGui::SetWindowPos(ImVec2(40, menubarHeight+10));
+				ImGui::SetWindowSize(ImVec2(m_Window->GetWindowSize().x,20));
+				for (size_t i=0; i<m_CurrentImage.size(); i++)
+				{
+					if (ImGui::SmallButton(m_CurrentImage[i]->GetName().c_str()))
+					{
+						m_iActiveImage = i;
+					}
+					ImGui::SameLine();
+				}
+			}
+			ImGui::End();
 		}
 		ImGui::PopStyleColor();
 	}
@@ -344,7 +382,8 @@ void Application::RenderImage()
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	GLuint index;
-	if (m_CurrentImage!=nullptr)
+	if (m_iActiveImage == -1) return;
+	if (m_CurrentImage[m_iActiveImage ]!=nullptr)
 	{
 		
 		//index = m_CurrentImage->Render();
@@ -361,7 +400,7 @@ void Application::RenderImage()
 		mat4 m = glm::ortho(-size.x / 2, size.x / 2, -size.y / 2, size.y / 2);
 		m_Shader.SetUniformMatrix("Proj", glm::value_ptr(m));
 
-		index = m_CurrentImage->Render();
+		index = m_CurrentImage[m_iActiveImage]->Render();
 
 		//glActiveTexture(GL_TEXTURE0);
 		//glBindTexture(GL_TEXTURE_2D, index);

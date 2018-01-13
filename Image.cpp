@@ -65,7 +65,13 @@ void Image::LoadTexture(const char * file)
 	m_CurrentMesh = newMesh;
 	
 	iIndex = id;
-	m_Path = file;
+	char nas[512];
+	memcpy(nas, file, strlen(file));
+	m_Path = string(nas);
+
+	
+	name = m_Path.substr(m_Path.find_last_of("\\")+1,m_Path.size() - m_Path.find_last_of("\\"));
+	cout << name;
 
 	FreeImage_Unload(img_bm);
 

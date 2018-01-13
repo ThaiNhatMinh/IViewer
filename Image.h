@@ -43,11 +43,12 @@ public:
 	bool CanUndo();
 	bool CanRedo();
 	void ApplyAction(IAction*);
+	string GetName() { return name; }
 private:
 
 	int m_bJustRedo;
 	Shader* m_Shader;
-	
+	string name;
 	string m_Path;
 	char m_Ext[5];
 	vec2 m_WinSize;

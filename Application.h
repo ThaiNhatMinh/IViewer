@@ -7,6 +7,7 @@ enum DialogEnum
 	D_RESIZE,
 	D_ROTATE_LEFT,
 	D_ROTATE_RIGHT,
+	D_IMAGE_LIST,
 	D_MAX_ENUM
 };
 
@@ -35,8 +36,8 @@ protected:
 	std::unique_ptr<Windows> m_Window;
 	std::unique_ptr<OpenGLRenderer> m_Renderer;
 	std::unique_ptr<SystemUI> m_UI;
-	std::unique_ptr<Image> m_CurrentImage;
-
+	std::vector<std::unique_ptr<Image>> m_CurrentImage;
+	int	m_iActiveImage;
 	ScreenMesh m_Screen;
 	Shader m_Shader;
 	bool DialogOption[D_MAX_ENUM];
