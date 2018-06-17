@@ -8,6 +8,7 @@ enum DialogEnum
 	D_ROTATE_LEFT,
 	D_ROTATE_RIGHT,
 	D_IMAGE_LIST,
+	D_ABOUT,
 	D_MAX_ENUM
 };
 

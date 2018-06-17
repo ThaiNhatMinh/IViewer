@@ -163,7 +163,12 @@ void Application::OpenFile()
 		m_CurrentImage.push_back(std::unique_ptr<Image>(new Image(m_Window->GetWindowSize(),&m_Shader)));
 		m_iActiveImage++;
 
-		m_CurrentImage[m_iActiveImage]->LoadTexture(ofn.lpstrFile);
+		if (!m_CurrentImage[m_iActiveImage]->LoadTexture(ofn.lpstrFile))
+		{
+			MessageBox(m_Window->GetHandle(), "Can't open file!", "Error", MB_OK);
+			m_CurrentImage.pop_back();
+			m_iActiveImage--;
+		}
 		//m_Screen.Resize(m_CurrentImage->GetSize().x, m_CurrentImage->GetSize().y);
 	}
 }
@@ -290,16 +295,20 @@ void Application::RenderUI()
 				}
 				if (ImGui::BeginMenu("Help"))
 				{
-					if (ImGui::MenuItem("About IViewer")) ImGui::OpenPopup("About");
+					if (ImGui::MenuItem("About IViewer"))
+						DialogOption[D_ABOUT] = 1;
 					ImGui::EndMenu();
 				}
 				ImGui::EndMainMenuBar();
 			}
-
-			if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			if(DialogOption[D_ABOUT])
+				ImGui::OpenPopup("About?");
+			if (ImGui::BeginPopupModal("About?", &DialogOption[D_ABOUT], ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Text("Software develop by No Name Team.\n University of Science 2015-2019");
-				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+				ImGui::Text("IViewer v1.0a\nSoftware develop by No Name Team.\nDeveloper:\n\t\tThai Nhat Minh\n\t\tPham Nguyen Truong Nguyen\n\t\tHuynh Quang Dieu");
+				ImGui::Separator();
+				ImGui::Text("University of Science");
+				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); DialogOption[D_ABOUT] = 0; }
 				ImGui::EndPopup();
 
 			}

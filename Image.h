@@ -20,7 +20,7 @@ class Image
 	friend class IAction;
 public:
 	Image(vec2 windowsize, Shader* p);
-	void LoadTexture(const char* file);
+	bool LoadTexture(const char* file);
 	bool SaveFile(const char* file);
 	~Image();
 

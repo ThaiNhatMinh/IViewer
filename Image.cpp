@@ -12,7 +12,7 @@ Image::Image(vec2 windowsize,Shader* p):m_Shader(p)
 
 }
 
-void Image::LoadTexture(const char * file)
+bool Image::LoadTexture(const char * file)
 {
 	
 
@@ -21,14 +21,14 @@ void Image::LoadTexture(const char * file)
 	if (img_format == FREE_IMAGE_FORMAT::FIF_UNKNOWN)
 	{
 		printf("Error: Unknown format !");
-		return ;
+		return 0;
 	}
 
 	FIBITMAP* img_bm = FreeImage_Load(img_format, file);
 	if (img_bm == NULL)
 	{
 		printf("Error: Image load FAIL !");
-		return;
+		return 0;
 	}
 
 	iWidth = FreeImage_GetWidth(img_bm);
@@ -74,7 +74,7 @@ void Image::LoadTexture(const char * file)
 	cout << name;
 
 	FreeImage_Unload(img_bm);
-
+	return 1;
 
 }
 
